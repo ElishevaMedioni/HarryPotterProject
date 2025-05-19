@@ -50,10 +50,19 @@ final class NetworkManager {
     //add check error
     func fetchImage(url: URL) async -> UIImage {
         do {
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let (data, response) = try await URLSession.shared.data(from: url)
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  httpResponse.statusCode == 200 else {
+                return UIImage(systemName: "person.fill") ?? UIImage()
+            }
+            
             if let img = UIImage(data: data) { return img }
-        } catch { print(error) }
-        return UIImage()
+            
+        } catch {
+            print("Error downloading image from \(url): \(error)")
+        }
+        return UIImage(systemName: "person.fill") ?? UIImage()
     }
 }
 

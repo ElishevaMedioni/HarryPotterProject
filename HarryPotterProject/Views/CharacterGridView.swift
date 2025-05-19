@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CharacterGridView: View {
-    @StateObject private var viewModel = HPViewModel()
+    @ObservedObject  var viewModel: HPViewModel
     
     // Grid columns - adaptive for different device sizes
     private let columns = [
@@ -18,16 +18,25 @@ struct CharacterGridView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                if viewModel.isLoading {
-                    loadingView
-                } else if !viewModel.charactersData.isEmpty {
-                    charactersGrid
-                } else if viewModel.hasError {
-                    errorView
-                } else {
-                    emptyView
+                ZStack {
+                    if viewModel.isLoading {
+                        ShimmerGridPlaceholderView()
+                            .transition(.opacity)
+                    }
+                    else if !viewModel.charactersData.isEmpty {
+                        charactersGrid
+                            .transition(.opacity)
+                    } else if viewModel.hasError {
+                        ErrorView(
+                            errorMessage: viewModel.errorMessage ?? "",
+                            retryAction: { viewModel.fetchData() })
+                    } else {
+                        emptyView
+                    }
                 }
+                .animation(.easeInOut(duration: 0.4), value: viewModel.isLoading)
             }
+            
             .navigationTitle("Harry Potter Characters")
             .onAppear {
                 if viewModel.charactersData.isEmpty {
@@ -50,46 +59,7 @@ struct CharacterGridView: View {
         .padding()
     }
     
-    // Loading view with progress indicator
-    private var loadingView: some View {
-        VStack(spacing: 16) {
-            ProgressView()
-                .scaleEffect(1.5)
-            Text("Loading characters...")
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, 100)
-    }
     
-    // Error message view
-    private var errorView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 50))
-                .foregroundColor(.orange)
-            
-            Text("Couldn't load characters")
-                .font(.headline)
-            
-            if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            
-            Button("Try Again") {
-                viewModel.fetchData()
-            }
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
     
     // Empty state view
     private var emptyView: some View {
@@ -101,7 +71,7 @@ struct CharacterGridView: View {
 }
 
 #Preview {
-    CharacterGridView()
+    CharacterGridView(viewModel: HPViewModel())
 }
 
 
