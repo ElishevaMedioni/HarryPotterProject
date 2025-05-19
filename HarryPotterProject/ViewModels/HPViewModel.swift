@@ -10,12 +10,11 @@ import SwiftUI
 
 final class HPViewModel: ObservableObject {
     
-    @Published var images: [UUID: UIImage] = [:]
-    var charactersData: [Character] = []
-    
-    @Published var isLoading = false
-    @Published var hasError = false
-    @Published var errorMessage: String?
+    @Published private(set) var characters: [Character] = []
+    @Published private(set) var images: [UUID: UIImage] = [:]
+    @Published private(set) var isLoading = false
+    @Published private(set) var hasError = false
+    @Published private(set) var errorMessage: String?
     
     func fetchData() {
         guard !isLoading else { return }
@@ -25,7 +24,7 @@ final class HPViewModel: ObservableObject {
         
         Task {
             do {
-                self.charactersData = try await NetworkManager.shared.getHPCharacters()
+                self.characters = try await NetworkManager.shared.getHPCharacters()
                 let imageDict = await downloadImagesFromUrl()
                 
                 await MainActor.run { //update on main thread
@@ -54,7 +53,7 @@ final class HPViewModel: ObservableObject {
             
             do {
                 let characters = try await NetworkManager.shared.getHPCharacters()
-                await MainActor.run { self.charactersData = characters }
+                await MainActor.run { self.characters = characters }
                 
                 let imageDict = await downloadImagesFromUrl()
                 
@@ -78,7 +77,7 @@ final class HPViewModel: ObservableObject {
         var resultImages = [UUID: UIImage]()
         
          await withTaskGroup(of: (UUID,UIImage).self) { group in
-             for character in charactersData {
+             for character in characters {
                  if let url = URL(string: character.image) {
                     group.addTask {
                         await (character.id ,NetworkManager.shared.fetchImage(url: url))

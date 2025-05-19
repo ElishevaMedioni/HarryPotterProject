@@ -23,7 +23,7 @@ struct CharacterGridView: View {
                         ShimmerGridPlaceholderView()
                             .transition(.opacity)
                     }
-                    else if !viewModel.charactersData.isEmpty {
+                    else if !viewModel.characters.isEmpty {
                         charactersGrid
                             .transition(.opacity)
                     } else if viewModel.hasError {
@@ -39,7 +39,7 @@ struct CharacterGridView: View {
             
             .navigationTitle("Harry Potter Characters")
             .onAppear {
-                if viewModel.charactersData.isEmpty {
+                if viewModel.characters.isEmpty {
                     viewModel.fetchData()
                 }
             }
@@ -52,7 +52,7 @@ struct CharacterGridView: View {
     // Character grid layout
     private var charactersGrid: some View {
         LazyVGrid(columns: columns, spacing: 24) {
-            ForEach(viewModel.charactersData) { character in
+            ForEach(viewModel.characters) { character in
                 CharacterGridItem(character: character, image: viewModel.images[character.id])
             }
         }
