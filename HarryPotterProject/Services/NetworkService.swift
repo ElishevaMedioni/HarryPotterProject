@@ -6,3 +6,9 @@
 //
 
 import Foundation
+import UIKit
+
+protocol NetworkServiceProtocol {
+    func fetch<T: Decodable>(_ endpoint: URL) async throws -> T
+    func fetchImage(from url: URL) async -> UIImage?
+}
