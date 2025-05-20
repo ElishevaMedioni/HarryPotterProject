@@ -10,8 +10,8 @@ import SwiftUI
 
 struct ErrorView: View {
     let errorMessage: String
-    let retryAction: () -> Void
-    
+    let retryAction: () async -> Void
+
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
@@ -27,7 +27,9 @@ struct ErrorView: View {
                 .multilineTextAlignment(.center)
             
             Button("Try Again") {
-                retryAction()
+                Task {
+                    await retryAction()
+                }
             }
             .padding()
             .background(Color.blue)

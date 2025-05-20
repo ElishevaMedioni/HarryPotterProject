@@ -10,59 +10,65 @@ import SwiftUI
 struct CharacterGridView: View {
     @ObservedObject  var viewModel: HPViewModel
     
-    // Grid columns - adaptive for different device sizes
-    private let columns = [
-        GridItem(.adaptive(minimum: 120, maximum: 150), spacing: 16)
-    ]
-    
     var body: some View {
         NavigationView {
             ScrollView {
                 ZStack {
-                    if viewModel.isLoading {
+                    switch viewModel.state {
+                    case .loading:
                         ShimmerGridPlaceholderView()
                             .transition(.opacity)
-                    }
-                    else if !viewModel.characters.isEmpty {
-                        charactersGrid
+                    case let .loaded(characters: characters):
+                        CharactersView(characters: characters, images: viewModel.images)
                             .transition(.opacity)
-                    } else if viewModel.hasError {
+                    case let .error(message):
                         ErrorView(
-                            errorMessage: viewModel.errorMessage ?? "",
-                            retryAction: { viewModel.fetchData() })
-                    } else {
-                        emptyView
+                            errorMessage: message,
+                            retryAction: { await viewModel.fetchData() }
+                        )
+                    case .idle:
+                        EmptyView()
                     }
                 }
-                .animation(.easeInOut(duration: 0.4), value: viewModel.isLoading)
+//                .animation(.easeInOut(duration: 0.4), value: viewModel.isLoading)
             }
-            
             .navigationTitle("Harry Potter Characters")
-            .onAppear {
-                if viewModel.characters.isEmpty {
-                    viewModel.fetchData()
+            .task {
+                if viewModel.state.isIdle {
+                    await viewModel.fetchData()
                 }
             }
             .refreshable {
-                await viewModel.refreshData()
+                await viewModel.fetchData(refresh: true)
             }
         }
     }
-    
-    // Character grid layout
-    private var charactersGrid: some View {
-        LazyVGrid(columns: columns, spacing: 24) {
-            ForEach(viewModel.characters) { character in
-                CharacterGridItem(character: character, image: viewModel.images[character.id])
+}
+
+struct CharactersView: View {
+    let characters: [Character]
+    let images: [UUID: UIImage]
+
+    // Grid columns - adaptive for different device sizes
+    private let columns = [
+        GridItem(.adaptive(minimum: 120, maximum: 150), spacing: 16)
+    ]
+
+    var body: some View {
+        if characters.isEmpty {
+            noCharacters
+        } else {
+            LazyVGrid(columns: columns, spacing: 24) {
+                ForEach(characters) { character in
+                    CharacterGridItem(character: character, image: images[character.id])
+                }
             }
+            .padding()
         }
-        .padding()
     }
-    
-    
-    
+
     // Empty state view
-    private var emptyView: some View {
+    private var noCharacters: some View {
         Text("No characters to display")
             .foregroundColor(.secondary)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
