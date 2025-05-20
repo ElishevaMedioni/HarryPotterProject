@@ -1,5 +1,5 @@
 //
-//  ShimmerGridPlaceholderView.swift
+//  ShimmerGridItem.swift
 //  HarryPotterProject
 //
 //  Created by Elisheva Medioni on 19/05/2025.
@@ -7,23 +7,6 @@
 
 
 import SwiftUI
-
-struct ShimmerGridPlaceholderView: View {
-    private let columns = [
-        GridItem(.adaptive(minimum: 120, maximum: 150), spacing: 16)
-    ]
-    
-    private let placeholderCount = 8
-    
-    var body: some View {
-        LazyVGrid(columns: columns, spacing: 24) {
-            ForEach(0..<placeholderCount, id: \.self) { _ in
-                ShimmerGridItem()
-            }
-        }
-        .padding()
-    }
-}
 
 struct ShimmerGridItem: View {
     var body: some View {
@@ -56,5 +39,5 @@ struct ShimmerGridItem: View {
 }
 
 #Preview {
-    ShimmerGridPlaceholderView()
+    ShimmerGridItem()
 }

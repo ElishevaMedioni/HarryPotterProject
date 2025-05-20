@@ -9,18 +9,24 @@ import SwiftUI
 
 struct CharacterGridView: View {
     @ObservedObject  var viewModel: HPViewModel
-    
+
     var body: some View {
         NavigationView {
             ScrollView {
                 ZStack {
                     switch viewModel.state {
                     case .loading:
-                        ShimmerGridPlaceholderView()
-                            .transition(.opacity)
-                    case let .loaded(characters: characters):
-                        CharactersView(characters: characters, images: viewModel.images)
-                            .transition(.opacity)
+                        GridView(
+                            items: (0 ..< 10).map { .shimmering(id: String($0)) },
+                            images: [:]
+                        )
+                        .transition(.opacity)
+                    case let .loaded(characters):
+                        GridView(
+                            items: characters.map { .character($0) },
+                            images: viewModel.images
+                        )
+                        .transition(.opacity)
                     case let .error(message):
                         ErrorView(
                             errorMessage: message,
@@ -30,7 +36,7 @@ struct CharacterGridView: View {
                         EmptyView()
                     }
                 }
-//                .animation(.easeInOut(duration: 0.4), value: viewModel.isLoading)
+                .transition(.opacity)
             }
             .navigationTitle("Harry Potter Characters")
             .task {
@@ -45,9 +51,23 @@ struct CharacterGridView: View {
     }
 }
 
-struct CharactersView: View {
-    let characters: [Character]
-    let images: [UUID: UIImage]
+enum HPGridItem: Identifiable {
+    case shimmering(id: String)
+    case character(Character)
+
+    var id: String {
+        switch self {
+        case let .shimmering(id):
+            id
+        case let .character(character):
+            character.id
+        }
+    }
+}
+
+struct GridView: View {
+    let items: [HPGridItem]
+    let images: [String: UIImage]
 
     // Grid columns - adaptive for different device sizes
     private let columns = [
@@ -55,12 +75,20 @@ struct CharactersView: View {
     ]
 
     var body: some View {
-        if characters.isEmpty {
+        if items.isEmpty {
             noCharacters
         } else {
             LazyVGrid(columns: columns, spacing: 24) {
-                ForEach(characters) { character in
-                    CharacterGridItem(character: character, image: images[character.id])
+                ForEach(items) { item in
+                    switch item {
+                        case let .character(character):
+                        CharacterGridItem(
+                            character: character,
+                            image: images[character.id]
+                        )
+                    case .shimmering:
+                        ShimmerGridItem()
+                    }
                 }
             }
             .padding()
@@ -76,9 +104,13 @@ struct CharactersView: View {
     }
 }
 
-#Preview {
-    CharacterGridView(viewModel: HPViewModel())
+ #Preview {
+     CharacterGridView(viewModel: HPViewModel(network: .preview))
+ }
+
+#Preview("Shimmer") {
+    GridView(
+       items: (0 ..< 10).map { .shimmering(id: String($0)) },
+       images: [:]
+    )
 }
-
-
-

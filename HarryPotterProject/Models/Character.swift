@@ -8,7 +8,8 @@
 import Foundation
 
 struct Character: Codable, Identifiable {
-    var id = UUID()
+    var id: String { nickname }
+
     let fullName, nickname: String
     let hogwartsHouse: HogwartsHouse
     let interpretedBy: String

@@ -10,9 +10,15 @@ import SwiftUI
 
 @MainActor
 final class HPViewModel: ObservableObject {
-    @Published private(set) var images: [UUID: UIImage] = [:]
+    @Published private(set) var images: [String: UIImage] = [:]
     @Published private(set) var state = State.idle
     @Published private(set) var isRefreshing = false
+
+    private let network: HPNetwork
+
+    init(network: HPNetwork) {
+        self.network = network
+    }
 
     func fetchData(refresh: Bool = false) async {
         if refresh {
@@ -24,7 +30,7 @@ final class HPViewModel: ObservableObject {
         }
 
         do {
-            state = .loaded(characters: try await NetworkManager.shared.getHPCharacters())
+            state = .loaded(characters: try await network.getCharacters())
             isRefreshing = false
             let imageDict = await downloadImagesFromUrl()
 
@@ -33,27 +39,28 @@ final class HPViewModel: ObservableObject {
             state = .error(message: "An unexpected error occurred: \(error.localizedDescription)")
         }
     }
-    
-    func downloadImagesFromUrl() async -> [UUID:UIImage] {
+
+    func downloadImagesFromUrl() async -> [String: UIImage] {
         guard let characters = state.characters else { return [:] }
 
-        var resultImages = [UUID: UIImage]()
-        
-         await withTaskGroup(of: (UUID,UIImage).self) { group in
-             for character in characters {
-                 if let url = URL(string: character.image) {
+        var resultImages = [String: UIImage]()
+
+        await withTaskGroup(of: (String, UIImage).self) { group in
+            for character in characters {
+                if let url = URL(string: character.image) {
                     group.addTask {
-                        await (character.id ,NetworkManager.shared.fetchImage(url: url))
+                        await (character.id, self.network.fetchImage(url))
                     }
                 }
             }
+
             for await (id, image) in group {
                 resultImages[id] = image
             }
         }
         return resultImages
     }
-    
+
     private func handleNetworkError(_ error: NetworkingError) async {
         let errorMessage = switch error {
         case .invalidURL:

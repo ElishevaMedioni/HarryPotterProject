@@ -9,8 +9,10 @@ import SwiftUI
 
 @main
 struct HarryPotterProjectApp: App {
-    @StateObject private var viewModel = HPViewModel()
-    
+    @StateObject private var viewModel = HPViewModel(
+        network: .production
+    )
+
     var body: some Scene {
         WindowGroup {
             CharacterGridView(viewModel: viewModel)
