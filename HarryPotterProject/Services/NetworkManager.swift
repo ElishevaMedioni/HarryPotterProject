@@ -9,17 +9,19 @@
 import Foundation
 import UIKit
 
-final class NetworkManager {
-    
-    //Singleton - it is recommended for things like NetworkManager to be Singleton
-    static let shared = NetworkManager()
+protocol HPNetworking {
+    func getHPCharacters() async throws -> [Character]
+    func fetchImage(url: URL) async -> UIImage
+}
+
+final class NetworkManager: HPNetworking {
     
     private let baseURL = "https://potterapi-fedeperin.vercel.app/en"
     private var charactersURL: String {
         return baseURL + "/characters"
     }
     
-    private init() {}
+     init() {}
     
     func getHPCharacters() async throws -> [Character] {
         guard let url = URL(string: charactersURL) else {

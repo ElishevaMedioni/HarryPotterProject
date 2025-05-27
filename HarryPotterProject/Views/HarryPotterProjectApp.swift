@@ -9,7 +9,8 @@ import SwiftUI
 
 @main
 struct HarryPotterProjectApp: App {
-    @StateObject private var viewModel = HPViewModel()
+    // used dependency injection - if I want to inject an other network layer I can easily
+    @StateObject private var viewModel = HPViewModel(network: NetworkManager())
     
     var body: some Scene {
         WindowGroup {

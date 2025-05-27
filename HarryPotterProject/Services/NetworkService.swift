@@ -9,12 +9,12 @@ import Foundation
 import UIKit
 
 protocol NetworkServiceProtocol {
-    func fetch<T: Decodable>(_ endpoint: URL) async throws -> T
+    func get<T: Decodable>(_ endpoint: URL) async throws -> T
     func fetchImage(from url: URL) async -> UIImage?
 }
 
 final class NetworkService: NetworkServiceProtocol {
-    func fetch<T: Decodable>(_ endpoint: URL) async throws -> T {
+    func get<T: Decodable>(_ endpoint: URL) async throws -> T {
         let (data, response) = try await URLSession.shared.data(from: endpoint)
         guard let httpResponse = response as? HTTPURLResponse,
               200..<300 ~= httpResponse.statusCode else {

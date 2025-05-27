@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24D81" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="PhotoEntity" representedClassName="PhotoEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="fullName" optional="YES" attributeType="String"/>
+        <attribute name="hogwartsHouse" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="imageData" optional="YES" attributeType="Binary"/>
+        <attribute name="nickName" optional="YES" attributeType="String"/>
+    </entity>
+</model>

@@ -56,5 +56,6 @@ struct ShimmerGridItem: View {
 }
 
 #Preview {
-    ShimmerGridPlaceholderView()
+    //ShimmerGridPlaceholderView()
+    ShimmerGridItem()
 }
